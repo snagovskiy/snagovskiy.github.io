@@ -1,0 +1,177 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import Gallery from '../components/Gallery.astro';
+
+// Данные для галереи пейзажей
+const landscapeImages = [
+  {
+    src: "/images/landscape/photo_2026-02-14_15-26-02.jpg",
+    alt: "Храм Всех Святых Волгоград",
+    title: "Храм Всех Святых",
+    description: "Закат"
+  },
+  {
+    src: "/images/landscape/IMG_20251016_170412.jpg",
+    alt: "Родина Мать Волгоград",
+    title: "Скульптура Родина-мать",
+    description: "Закат"
+  },
+  {
+    src: "/images/landscape/photo_2026-02-14_15-26-25.jpg",
+    alt: "Вперёд и вверх Волгоград",
+    title: "Вперёд и вверх",
+    description: "Жанровая скульптура, поздний вечер"
+  },
+  {
+    src: "/images/landscape/photo_2026-02-14_15-26-35.jpg",
+    alt: "Новый экспериментальный театр Волгоград",
+    title: "Новый экспериментальный театр",
+    description: "Иллюминация и движение в вечернем городе"
+  },
+  {
+    src: "/images/landscape/photo_2026-02-14_15-26-42.jpg",
+    alt: "Вокзал Волгоград",
+    title: "Вокзал",
+    description: "Атмосфера исторического центра города"
+  },
+  {
+    src: "/images/landscape/photo_2026-02-14_15-26-55.jpg",
+    alt: "Вокзал Волгоград",
+    title: "Вокзал",
+    description: "Атмосфера исторического центра города"
+  },
+  {
+    src: "/images/landscape/IMG_20260215_174439.jpg",
+    alt: "Трамвайный вагон серии Х Волгоград",
+    title: "Трамвайный вагон серии Х",
+    description: "памятник технике, расположенный в Волгограде"
+  },
+  {
+    src: "/images/landscape/IMG_20251017_104147.jpg",
+    alt: "Волгоград",
+    title: "Город",
+    description: "Городские улицы"
+  },
+  {
+    src: "/images/landscape/IMG_20251016_130440.jpg",
+    alt: "Городская набережная Волгоград",
+    title: "Городская набережная",
+    description: "Повседневные моменты на улицах города"
+  },
+   {
+    src: "/images/landscape/IMG_20251016_123325.jpg",
+    alt: "Парк Победы. Волгоград",
+    title: "Парк Победы",
+    description: "Женщины труженици тыла"
+  },
+  {
+    src: "/images/landscape/IMG_20251016_170515.jpg",
+    alt: "Храм Всех Святых. Волгоград",
+    title: "Храм Всех Святых",
+    description: "Храм Всех Святых на закате"
+  },
+  {
+    src: "/images/landscape/IMG_20251016_154911.jpg",
+    alt: "Детский хоровод. Волгоград",
+    title: "Детский хоровод",
+    description: "Фонтан-памятник"
+  },
+   {
+    src: "/images/landscape/IMG_20251017_102533.jpg",
+    alt: "Родина Мать Волгоград",
+    title: "Скульптура Родина-мать",
+    description: "Закат"
+  },
+  {
+    src: "/images/landscape/IMG_20251016_170837.jpg",
+    alt: "Скорбящая мать Волгоград",
+    title: "Скорбящая мать",
+    description: "Закат"
+  },
+  {
+    src: "/images/landscape/IMG_20251017_103027.jpg",
+    alt: "Тополь на площади Павших Борцов Волгоград",
+    title: "Тополь на площади Павших Борцов",
+    description: "Исторический природный памятник"
+  }
+];
+---
+
+<MainLayout 
+  title="Пейзажи - StreetFrame"
+  description="Галерея городских пейзажей. Уличная фотография, запечатлевшая атмосферу города в разное время суток и года."
+>
+  <section class="page-header">
+    <h1 class="page-title">Городские пейзажи</h1>
+    <p class="page-description">
+      Город — это не просто скопление зданий и улиц. Это живой организм, 
+      который меняется с каждым часом, каждым сезоном. В этой галерее собраны 
+      моменты, когда город раскрывает свою душу.
+    </p>
+  </section>
+
+  <Gallery images={landscapeImages} />
+  
+  <div class="pagination">
+    <button class="pagination-btn pagination-btn-disabled" disabled>Назад</button>
+    <span class="pagination-info">Страница 1 из 2</span>
+    <a href="#" class="pagination-btn">Вперёд</a>
+  </div>
+</MainLayout>
+
+<style>
+  .page-header {
+    text-align: center;
+    padding: 2rem 0;
+  }
+  
+  .page-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+  }
+  
+  .page-description {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+  
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    margin: 3rem 0;
+  }
+  
+  .pagination-btn {
+    padding: 0.5rem 1.5rem;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all var(--transition-speed);
+  }
+  
+  .pagination-btn:hover:not(.pagination-btn-disabled) {
+    background-color: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+  }
+  
+  .pagination-btn-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .pagination-info {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+</style>

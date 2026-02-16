@@ -1,0 +1,386 @@
+---
+interface Props {
+  images: Array<{
+    src: string;
+    alt: string;
+    title?: string;
+    description?: string;
+  }>;
+}
+
+const { images } = Astro.props;
+---
+
+<div class="gallery">
+  {images.map((image, index) => (
+    <div 
+      class="gallery-item-wrapper" 
+      data-index={index}
+      data-src={image.src}
+      data-alt={image.alt}
+      data-title={image.title || ''}
+      data-description={image.description || ''}
+      onclick="openLightbox(this)"
+    >
+      <div class="gallery-item">
+        <img 
+          src={image.src} 
+          alt={image.alt} 
+          class="gallery-image"
+          loading="lazy"
+          width="400"
+          height="300"
+        />
+        {(image.title || image.description) && (
+          <div class="image-info">
+            {image.title && <h3 class="image-title">{image.title}</h3>}
+            {image.description && <p class="image-description">{image.description}</p>}
+          </div>
+        )}
+      </div>
+    </div>
+  ))}
+</div>
+
+<!-- Модальное окно для просмотра фото -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <span class="lightbox-close" onclick="closeLightbox(event)">&times;</span>
+  <img class="lightbox-content" id="lightbox-img">
+  <div class="lightbox-caption" id="lightbox-caption"></div>
+  <div class="lightbox-prev" onclick="changeImage(-1, event)">&#10094;</div>
+  <div class="lightbox-next" onclick="changeImage(1, event)">&#10095;</div>
+</div>
+
+<script>
+  let currentIndex = 0;
+  let galleryItems = [];
+  
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightbox-img');
+  const lightboxCaption = document.getElementById('lightbox-caption');
+
+  // Обновляем список элементов галереи
+  function updateGalleryItems() {
+    galleryItems = Array.from(document.querySelectorAll('.gallery-item-wrapper'));
+    console.log('Gallery items updated:', galleryItems.length); // Для отладки
+  }
+
+  // Функция открытия
+  window.openLightbox = function(element) {
+    updateGalleryItems(); // Обновляем список перед открытием
+    
+    // Находим индекс элемента в обновленном списке
+    const elementIndex = galleryItems.indexOf(element);
+    if (elementIndex !== -1) {
+      currentIndex = elementIndex;
+    } else {
+      // Если не нашли, используем data-index
+      currentIndex = parseInt(element.dataset.index) || 0;
+    }
+    
+    const src = element.dataset.src;
+    const alt = element.dataset.alt;
+    const title = element.dataset.title;
+    const description = element.dataset.description;
+    
+    lightboxImg.src = src;
+    lightboxImg.alt = alt;
+    
+    if (title || description) {
+      lightboxCaption.style.display = 'block';
+      lightboxCaption.innerHTML = '';
+      if (title) {
+        const titleEl = document.createElement('h3');
+        titleEl.textContent = title;
+        lightboxCaption.appendChild(titleEl);
+      }
+      if (description) {
+        const descEl = document.createElement('p');
+        descEl.textContent = description;
+        lightboxCaption.appendChild(descEl);
+      }
+    } else {
+      lightboxCaption.style.display = 'none';
+    }
+    
+    lightbox.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  // Функция закрытия
+  window.closeLightbox = function(event) {
+    if (event) event.stopPropagation();
+    lightbox.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  // Функция смены изображения
+  window.changeImage = function(direction, event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
+    updateGalleryItems(); // Обновляем список перед навигацией
+    
+    if (galleryItems.length === 0) {
+      console.warn('No gallery items found');
+      return;
+    }
+    
+    // Вычисляем новый индекс
+    currentIndex = (currentIndex + direction + galleryItems.length) % galleryItems.length;
+    
+    // Получаем элемент по новому индексу
+    const nextElement = galleryItems[currentIndex];
+    if (nextElement) {
+      window.openLightbox(nextElement);
+    }
+  }
+
+  // Инициализация после загрузки DOM
+  function init() {
+    updateGalleryItems();
+    console.log('Gallery initialized with', galleryItems.length, 'items');
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  // Обновляем список при изменении DOM (например, после загрузки новых фото)
+  const observer = new MutationObserver(updateGalleryItems);
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  // Закрытие по Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && lightbox.style.display === 'flex') {
+      closeLightbox();
+    }
+    if (e.key === 'ArrowLeft' && lightbox.style.display === 'flex') {
+      e.preventDefault();
+      changeImage(-1);
+    }
+    if (e.key === 'ArrowRight' && lightbox.style.display === 'flex') {
+      e.preventDefault();
+      changeImage(1);
+    }
+  });
+
+  // Добавляем поддержку свайпов для мобильных
+  let touchstartX = 0;
+  let touchendX = 0;
+  
+  lightbox.addEventListener('touchstart', function(e) {
+    touchstartX = e.changedTouches[0].screenX;
+  });
+  
+  lightbox.addEventListener('touchend', function(e) {
+    touchendX = e.changedTouches[0].screenX;
+    if (touchendX < touchstartX - 50) {
+      changeImage(1); // свайп влево - следующее
+    }
+    if (touchendX > touchstartX + 50) {
+      changeImage(-1); // свайп вправо - предыдущее
+    }
+  });
+</script>
+
+<style>
+  .gallery {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+  
+  .gallery-item-wrapper {
+    cursor: pointer;
+  }
+  
+  .gallery-item {
+    background-color: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+    transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .gallery-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  }
+  
+  .gallery-image {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    display: block;
+    transition: opacity 0.3s ease;
+  }
+  
+  .gallery-item:hover .gallery-image {
+    opacity: 0.9;
+  }
+  
+  .image-info {
+    padding: 1.2rem;
+  }
+  
+  .image-title {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+  }
+  
+  .image-description {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  
+  /* Стили для лайтбокса */
+  .lightbox {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.95);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .lightbox-content {
+    max-width: 90%;
+    max-height: 80vh;
+    object-fit: contain;
+    border-radius: var(--border-radius);
+    cursor: default;
+  }
+  
+  .lightbox-caption {
+    color: white;
+    padding: 1rem;
+    text-align: center;
+    max-width: 80%;
+    background: rgba(0,0,0,0.5);
+    border-radius: var(--border-radius);
+    margin-top: 1rem;
+  }
+  
+  .lightbox-caption h3 {
+    margin-bottom: 0.5rem;
+    color: white;
+  }
+  
+  .lightbox-caption p {
+    color: #ccc;
+  }
+  
+  .lightbox-close {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    color: white;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s;
+    z-index: 2001;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.3);
+    border-radius: 50%;
+  }
+  
+  .lightbox-close:hover {
+    color: var(--accent-color);
+    background: rgba(0,0,0,0.5);
+  }
+  
+  .lightbox-prev,
+  .lightbox-next {
+    cursor: pointer;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: white;
+    font-size: 40px;
+    font-weight: bold;
+    padding: 1rem;
+    transition: all 0.3s;
+    user-select: none;
+    z-index: 2001;
+    background: rgba(0,0,0,0.3);
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .lightbox-prev:hover,
+  .lightbox-next:hover {
+    color: var(--accent-color);
+    background: rgba(0,0,0,0.5);
+  }
+  
+  .lightbox-prev {
+    left: 20px;
+  }
+  
+  .lightbox-next {
+    right: 20px;
+  }
+  
+  /* Мобильные стили */
+  @media (max-width: 768px) {
+    .lightbox-prev,
+    .lightbox-next {
+      font-size: 30px;
+      width: 50px;
+      height: 50px;
+    }
+    
+    .lightbox-close {
+      font-size: 30px;
+      width: 40px;
+      height: 40px;
+      top: 10px;
+      right: 10px;
+    }
+    
+    .lightbox-content {
+      max-height: 70vh;
+    }
+  }
+  
+  @media (min-width: 640px) {
+    .gallery {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .gallery {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .gallery-image {
+      height: 300px;
+    }
+  }
+</style>

@@ -1,0 +1,230 @@
+<div class="mobile-menu-wrapper">
+  <button 
+    class="mobile-menu-toggle" 
+    id="mobile-menu-toggle"
+    aria-label="Открыть меню"
+    aria-expanded="false"
+  >
+    <span class="hamburger-line"></span>
+    <span class="hamburger-line"></span>
+    <span class="hamburger-line"></span>
+  </button>
+
+  <div class="mobile-menu" id="mobile-menu-panel">
+    <div class="mobile-menu-header">
+      <svg class="mobile-logo" width="140" height="32" viewBox="0 0 180 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Смартфон -->
+  <g>
+    <rect x="2" y="6" width="28" height="36" rx="6" fill="var(--accent-color)" opacity="0.15"/>
+    <rect x="4" y="8" width="24" height="32" rx="4" fill="var(--bg-secondary)"/>
+    <rect x="6" y="10" width="20" height="20" rx="2" fill="var(--accent-color)" opacity="0.1"/>
+    <circle cx="16" cy="20" r="5" fill="var(--accent-color)" opacity="0.3"/>
+    <circle cx="16" cy="20" r="2.5" fill="var(--accent-color)"/>
+    <circle cx="22" cy="14" r="2" fill="var(--accent-color)"/>
+    <circle cx="16" cy="33" r="1.5" fill="var(--border-color)"/>
+  </g>
+  
+  <rect x="32" y="20" width="10" height="2" rx="1" fill="var(--accent-color)" opacity="0.5"/>
+  
+  <g>
+    <text x="44" y="24" font-family="Inter, sans-serif" font-size="20" font-weight="700" fill="var(--text-primary)">Street</text>
+    <text x="104" y="24" font-family="Inter, sans-serif" font-size="20" font-weight="700" fill="var(--accent-color)">Frame</text>
+  </g>
+  
+  <text x="44" y="34" font-family="Inter, sans-serif" font-size="8" fill="var(--text-secondary)">MOBILE • STREET • SINCE 2006</text>
+</svg>
+    </div>
+    
+    <nav class="mobile-nav">
+      <ul class="mobile-nav-list">
+        <li class="mobile-nav-item">
+          <a href="/" class="mobile-nav-link">Главная</a>
+        </li>
+        <li class="mobile-nav-item">
+          <a href="/landscapes" class="mobile-nav-link">Пейзажи</a>
+        </li>
+        <li class="mobile-nav-item">
+          <a href="/about" class="mobile-nav-link">Об авторе</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>
+
+<script>
+  (function() {
+    function initMobileMenu() {
+      const toggleButton = document.getElementById('mobile-menu-toggle');
+      const menuPanel = document.getElementById('mobile-menu-panel');
+      
+      if (!toggleButton || !menuPanel) {
+        setTimeout(initMobileMenu, 100);
+        return;
+      }
+
+      const menuLinks = menuPanel.querySelectorAll('.mobile-nav-link');
+      
+      function toggleMenu(force) {
+        const isOpen = toggleButton.getAttribute('aria-expanded') === 'true';
+        const newState = force !== undefined ? force : !isOpen;
+        
+        toggleButton.setAttribute('aria-expanded', newState);
+        toggleButton.setAttribute('aria-label', newState ? 'Закрыть меню' : 'Открыть меню');
+        
+        if (newState) {
+          menuPanel.classList.add('open');
+          document.body.style.overflow = 'hidden';
+        } else {
+          menuPanel.classList.remove('open');
+          document.body.style.overflow = '';
+        }
+      }
+
+      function closeMenu() {
+        toggleMenu(false);
+      }
+
+      toggleButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleMenu();
+      });
+
+      menuLinks.forEach(link => {
+        link.addEventListener('click', closeMenu);
+      });
+
+      document.addEventListener('click', function(e) {
+        if (!toggleButton.contains(e.target) && !menuPanel.contains(e.target)) {
+          closeMenu();
+        }
+      });
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          closeMenu();
+        }
+      });
+
+      window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+          closeMenu();
+          document.body.style.overflow = '';
+        }
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initMobileMenu);
+    } else {
+      initMobileMenu();
+    }
+  })();
+</script>
+
+<style>
+  .mobile-menu-wrapper {
+    display: block;
+  }
+  
+  .mobile-menu-toggle {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 26px;
+    height: 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    z-index: 101;
+    position: relative;
+    flex-shrink: 0;
+  }
+  
+  .hamburger-line {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background-color: var(--text-primary);
+    border-radius: 2px;
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  }
+  
+  .mobile-menu-toggle[aria-expanded="true"] .hamburger-line:nth-child(1) {
+    transform: translateY(9px) rotate(45deg);
+  }
+  
+  .mobile-menu-toggle[aria-expanded="true"] .hamburger-line:nth-child(2) {
+    opacity: 0;
+  }
+  
+  .mobile-menu-toggle[aria-expanded="true"] .hamburger-line:nth-child(3) {
+    transform: translateY(-9px) rotate(-45deg);
+  }
+  
+  .mobile-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: var(--bg-secondary);
+    z-index: 100;
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+    overflow-y: auto;
+    visibility: hidden;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  
+  .mobile-menu.open {
+    transform: translateX(0);
+    visibility: visible;
+  }
+  
+  .mobile-menu-header {
+    padding: 1rem 2rem 2rem;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 1rem;
+  }
+  
+  .mobile-logo {
+    display: block;
+    height: 32px;
+    width: auto;
+  }
+  
+  .mobile-nav-list {
+    list-style: none;
+    padding: 0 2rem;
+    margin: 0;
+  }
+  
+  .mobile-nav-item {
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+  }
+  
+  .mobile-nav-link {
+    text-decoration: none;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    font-weight: 500;
+    display: block;
+    padding: 0.5rem 0;
+    transition: color 0.3s ease;
+  }
+  
+  .mobile-nav-link:hover {
+    color: var(--accent-color);
+  }
+  
+  @media (min-width: 769px) {
+    .mobile-menu-wrapper {
+      display: none;
+    }
+  }
+</style>

@@ -1,0 +1,218 @@
+---
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  canonical?: string;
+  siteName?: string;
+  locale?: string;
+  noindex?: boolean;
+}
+
+const {
+  title = "StreetFrame - Галерея уличной фотографии",
+  description = "Профессиональная уличная фотография. Пейзажи городской среды, архитектура и моменты жизни города. Свежий взгляд на повседневность российских городов.",
+  image = "/images/og-image.jpg",
+  canonical,
+  siteName = "StreetFrame",
+  locale = "ru_RU",
+  noindex = false
+} = Astro.props;
+
+const siteUrl = Astro.url.origin || "https://streetframe.ru";
+const fullTitle = title.includes("StreetFrame") ? title : `${title} | StreetFrame`;
+const fullImageUrl = image.startsWith('http') ? image : `${siteUrl}${image}`;
+const fullCanonical = canonical ? `${siteUrl}${canonical}` : `${siteUrl}${Astro.url.pathname}`;
+const currentUrl = `${siteUrl}${Astro.url.pathname}`;
+
+// Текущий год для копирайта в метатегах
+const currentYear = new Date().getFullYear();
+---
+
+<!-- ========== ОСНОВНЫЕ МЕТА-ТЕГИ ========== -->
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<meta name="keywords" content="уличная фотография, городские пейзажи, фото российских городов, стрит-фотография, архитектура, документальная фотография, российские фотографы" />
+<meta name="author" content="StreetFrame" />
+<meta name="copyright" content={`© ${currentYear} StreetFrame. Все права защищены.`} />
+<meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"} />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="format-detection" content="telephone=no, address=no, email=no" />
+<link rel="canonical" href={fullCanonical} />
+
+<!-- ========== ИКОНКИ И ЦВЕТА ========== -->
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="alternate icon" href="/favicon.ico" type="image/x-icon" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<meta name="theme-color" content="#007bff" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#1e1e1e" media="(prefers-color-scheme: dark)" />
+
+<!-- ========== ВКОНТАКТЕ (VK) ========== -->
+<meta property="vk:title" content={fullTitle} />
+<meta property="vk:description" content={description} />
+<meta property="vk:image" content={fullImageUrl} />
+<meta property="vk:url" content={currentUrl} />
+<meta property="vk:site" content={siteName} />
+<!-- <meta property="vk:app_id" content="123456789" /> Замените на ваш VK App ID -->
+
+<!-- Open Graph для VK (VK полностью поддерживает OG) -->
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={fullImageUrl} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:url" content={currentUrl} />
+<meta property="og:site_name" content={siteName} />
+<meta property="og:locale" content={locale} />
+<meta property="og:type" content="website" />
+
+<!-- ========== ОДНОКЛАССНИКИ (OK) ========== -->
+<meta property="ok:title" content={fullTitle} />
+<meta property="ok:description" content={description} />
+<meta property="ok:image" content={fullImageUrl} />
+<meta property="ok:url" content={currentUrl} />
+<meta property="ok:site" content={siteName} />
+<!-- <meta name="ok:app_id" content="123456789" /> Замените на ваш OK App ID -->
+<meta property="og:image" content={fullImageUrl} /> <!-- OK читает OG -->
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+
+<!-- ========== TELEGRAM ========== -->
+<meta property="telegram:title" content={fullTitle} />
+<meta property="telegram:description" content={description.slice(0, 200)} /> <!-- Telegram предпочитает краткость -->
+<meta property="telegram:image" content={fullImageUrl} />
+<meta property="telegram:site" content={siteName} />
+<meta property="telegram:url" content={currentUrl} />
+<!-- <meta name="telegram:channel" content="@streetframe" /> Замените на ваш канал -->
+<meta property="al:ios:app_name" content="Telegram" />
+<meta property="al:android:app_name" content="Telegram" />
+
+<!-- ========== MAX (МЕССЕНДЖЕР) ========== -->
+<meta property="max:title" content={fullTitle} />
+<meta property="max:description" content={description.slice(0, 180)} /> <!-- MAX ограничение длины -->
+<meta property="max:image" content={fullImageUrl} />
+<meta property="max:url" content={currentUrl} />
+<meta property="max:site" content={siteName} />
+<meta property="max:app" content="ru.max" />
+
+<!-- ========== MAIL.RU / МОЙ МИР ========== -->
+<meta property="mailru:title" content={fullTitle} />
+<meta property="mailru:description" content={description} />
+<meta property="mailru:image" content={fullImageUrl} />
+<meta property="mailru:url" content={currentUrl} />
+<meta property="mailru:site" content={siteName} />
+<meta property="mailru:locale" content={locale} />
+
+<!-- ========== YANDEX ========== -->
+<meta name="yandex-verification" content="1234567890" /> <!-- Замените на ваш код верификации -->
+<meta name="yandex-tableau-widget" content="logo=/tableau-logo.png, color=#007bff" />
+<meta name="yandex" content="noindex, follow" /> <!-- Для специфичных инструкций Yandex -->
+
+<!-- ========== RAMBLER / TOP100 ========== -->
+<!-- <meta name="rambler-verification" content="1234567890" /> Замените на ваш код верификации -->
+<meta name="rambler-locale" content={locale} />
+
+<!-- ========== ДЛЯ МОБИЛЬНЫХ ПРИЛОЖЕНИЙ ========== -->
+<!-- Яндекс.Дзен -->
+<meta property="dz:title" content={fullTitle} />
+<meta property="dz:description" content={description} />
+<meta property="dz:image" content={fullImageUrl} />
+
+<!-- Viber (популярный в РФ) -->
+<meta property="viber:title" content={fullTitle} />
+<meta property="viber:description" content={description} />
+<meta property="viber:image" content={fullImageUrl} />
+<meta property="viber:url" content={currentUrl} />
+
+<!-- WhatsApp (все ещё популярен) -->
+<meta property="og:title" content={fullTitle} /> <!-- WhatsApp читает OG -->
+<meta property="og:description" content={description} />
+<meta property="og:image" content={fullImageUrl} />
+<meta property="og:url" content={currentUrl} />
+
+<!-- ========== РУССКОЯЗЫЧНАЯ АДАПТАЦИЯ ========== -->
+<meta property="og:locale:alternate" content="ru_RU" />
+<meta property="og:locale:alternate" content="ru_UA" />
+<meta property="og:locale:alternate" content="ru_BY" />
+<meta property="og:locale:alternate" content="ru_KZ" />
+<meta name="geo.region" content="RU" />
+<meta name="geo.placename" content="Russia" />
+<meta name="geo.position" content="55.755826;37.617300" /> <!-- Координаты Москвы, замените под ваш регион -->
+<meta name="ICBM" content="55.755826, 37.617300" />
+
+<!-- ========== СТРУКТУРИРОВАННЫЕ ДАННЫЕ ДЛЯ ПОИСКОВИКОВ ========== -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Photography",
+  "name": {fullTitle},
+  "description": {description},
+  "url": {currentUrl},
+  "image": {fullImageUrl},
+  "author": {
+    "@type": "Person",
+    "name": "StreetFrame",
+    "description": "Уличный фотограф, документалист городской жизни",
+    "nationality": "Russian",
+    "sameAs": [
+      "https://vk.com/streetframe",
+      "https://ok.ru/streetframe",
+      "https://t.me/streetframe"
+    ]
+  },
+  "inLanguage": "ru",
+  "address": {
+    "@type": "PostalAddress",
+    "addressCountry": "RU"
+  }
+}
+</script>
+
+<!-- Дополнительные LD+JSON для конкретных типов страниц -->
+{canonical?.includes('/landscapes') && (
+  <script type="application/ld+json">
+    {`
+      {
+        "@context": "https://schema.org",
+        "@type": "ImageGallery",
+        "name": "Галерея городских пейзажей - StreetFrame",
+        "description": "Коллекция уличной фотографии российских городов",
+        "url": "${currentUrl}",
+        "author": {
+          "@type": "Person",
+          "name": "StreetFrame"
+        }
+      }
+    `}
+  </script>
+)}
+
+{canonical?.includes('/about') && (
+  <script type="application/ld+json">
+    {`
+      {
+        "@context": "https://schema.org",
+        "@type": "AboutPage",
+        "name": "Об авторе - StreetFrame",
+        "description": "Информация об уличном фотографе, работающем в жанре городской документалистики",
+        "url": "${currentUrl}",
+        "mainEntity": {
+          "@type": "Person",
+          "name": "StreetFrame",
+          "jobTitle": "Уличный фотограф",
+          "worksFor": {
+            "@type": "Organization",
+            "name": "StreetFrame"
+          }
+        }
+      }
+    `}
+  </script>
+)}
+
+<!-- ========== ДОПОЛНИТЕЛЬНЫЕ РУССКИЕ МЕТА-ТЕГИ ========== -->
+<meta name="lang" content="ru" />
+<meta name="language" content="russian" />
+<meta name="distribution" content="Global" />
+<meta name="revisit-after" content="7 days" />
+<meta name="document-state" content="dynamic" />
