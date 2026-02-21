@@ -12,6 +12,10 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+  # Triggered by repository_dispatch from Cloudflare Worker
+  repository_dispatch:
+    types: [prismic-update]   # должно совпадать с event_type из Worker'а
+
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
