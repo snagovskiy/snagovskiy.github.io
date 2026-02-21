@@ -1,0 +1,119 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import Gallery from '../../components/Gallery.astro';
+import { client } from '../../lib/prismic';
+import { asText } from '@prismicio/helpers';
+import { predicate } from '@prismicio/client';
+
+export async function getStaticPaths() {
+  // Сначала узнаем общее количество пейзажей
+  const totalResults = await client.getByType('gallery_image', {
+    filters: [predicate.at('my.gallery_image.category', 'landscape')],
+    pageSize: 1, // нам нужно только общее количество, поэтому pageSize=1
+  });
+  
+  const totalPages = totalResults.total_pages;
+  const paths = [];
+  
+  // Генерируем пути для всех страниц, начиная со 2
+  for (let i = 2; i <= totalPages; i++) {
+    paths.push({ params: { page: i.toString() } });
+  }
+  
+  return paths;
+}
+
+const { page } = Astro.params;
+const currentPage = parseInt(page, 10);
+const pageSize = 15;
+
+// Если страница невалидна, редирект
+if (isNaN(currentPage) || currentPage < 2) {
+  return Astro.redirect('/landscapes', 302);
+}
+
+// Навигация
+const navigation = await client.getSingle('navigation');
+
+// Запрашиваем нужную страницу пейзажей
+const landscapesResponse = await client.getByType('gallery_image', {
+  filters: [predicate.at('my.gallery_image.category', 'landscape')],
+  pageSize,
+  page: currentPage,
+  orderings: { field: 'document.first_publication_date', direction: 'desc' }
+});
+
+// Если запрошенная страница больше существующих, редирект на последнюю
+if (currentPage > landscapesResponse.total_pages) {
+  return Astro.redirect(`/landscapes/${landscapesResponse.total_pages}`, 302);
+}
+
+const landscapes = landscapesResponse.results
+  .map(doc => {
+    const image = doc.data.image;
+    if (!image?.url) return null;
+    return {
+      src: image.url,
+      alt: image.alt || asText(doc.data.title) || '',
+      title: asText(doc.data.title) || '',
+      description: asText(doc.data.description) || ''
+    };
+  })
+  .filter(Boolean);
+
+const totalPages = landscapesResponse.total_pages;
+const prevPage = currentPage > 2 ? currentPage - 1 : (currentPage === 2 ? 1 : null);
+const nextPage = currentPage < totalPages ? currentPage + 1 : null;
+---
+
+<MainLayout 
+  navigation={navigation}
+  title={`Пейзажи - Страница ${currentPage} - StreetFrame`}
+  description="Галерея городских пейзажей..."
+>
+  <section class="page-header">
+    <h1 class="page-title">Городские пейзажи</h1>
+    <p class="page-description">
+      Город — это не просто скопление зданий и улиц. Это живой организм, 
+      который меняется с каждым часом, каждым сезоном. В этой галерее собраны 
+      моменты, когда город раскрывает свою душу.
+    </p>
+  </section>
+
+  {landscapes.length === 0 ? (
+    <p class="no-images">В этой категории пока нет фотографий</p>
+  ) : (
+    <Gallery images={landscapes} />
+  )}
+  
+  {totalPages > 1 && (
+    <div class="pagination">
+      {prevPage ? (
+        <a href={prevPage === 1 ? '/landscapes' : `/landscapes/${prevPage}`} class="pagination-btn">Назад</a>
+      ) : (
+        <button class="pagination-btn pagination-btn-disabled" disabled>Назад</button>
+      )}
+      <span class="pagination-info">
+        Страница {currentPage} из {totalPages}
+      </span>
+      {nextPage ? (
+        <a href={`/landscapes/${nextPage}`} class="pagination-btn">Вперёд</a>
+      ) : (
+        <button class="pagination-btn pagination-btn-disabled" disabled>Вперёд</button>
+      )}
+    </div>
+  )}
+</MainLayout>
+
+<style>
+  /* Те же стили, что в index.astro */
+  .page-header { text-align: center; padding: 2rem 0; }
+  .page-title { font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-primary); }
+  .page-description { font-size: 1.1rem; color: var(--text-secondary); max-width: 700px; margin: 0 auto; line-height: 1.6; }
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 1.5rem; margin: 3rem 0; }
+  .pagination-btn { padding: 0.5rem 1.5rem; background-color: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: var(--border-radius); text-decoration: none; font-weight: 500; transition: all var(--transition-speed); }
+  .pagination-btn:hover:not(.pagination-btn-disabled) { background-color: var(--accent-color); color: white; border-color: var(--accent-color); }
+  .pagination-btn-disabled { opacity: 0.5; cursor: not-allowed; }
+  .pagination-info { color: var(--text-secondary); font-size: 0.9rem; }
+  .no-images { text-align: center; color: var(--text-secondary); padding: 3rem; font-size: 1.2rem; }
+</style>

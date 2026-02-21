@@ -1,3 +1,19 @@
+---
+export interface Props {
+  navigation?: any;
+}
+
+const { navigation } = Astro.props;
+
+const defaultMenuItems = [
+  { label: 'Главная', link: { url: '/' } },
+  { label: 'Пейзажи', link: { url: '/landscapes' } },
+  { label: 'Об авторе', link: { url: '/about' } }
+];
+
+const menuItems = navigation?.data?.menu_items || defaultMenuItems;
+---
+
 <footer class="footer">
   <div class="container">
     <div class="footer-content">
@@ -6,9 +22,15 @@
         <p class="footer-text">Уличная фотография, пейзажи и моменты городской жизни.</p>
       </div>
       <div class="footer-links">
-        <a href="/" class="footer-link">Главная</a>
-        <a href="/landscapes" class="footer-link">Пейзажи</a>
-        <a href="/about" class="footer-link">Об авторе</a>
+        {menuItems.map((item, index) => (
+          <a 
+            href={item.link?.url || '#'} 
+            class="footer-link" 
+            key={index}
+          >
+            {item.label}
+          </a>
+        ))}
         <!-- <span class="footer-link disabled">Портреты (скоро)</span> -->
       </div>
     </div>

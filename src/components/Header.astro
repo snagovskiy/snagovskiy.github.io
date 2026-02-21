@@ -1,13 +1,51 @@
 ---
 import ThemeToggle from './ThemeToggle.astro';
 import MobileMenu from './MobileMenu.astro';
+
+export interface Props {
+  navigation?: any;
+}
+
+const { navigation } = Astro.props;
+
+// Запасное меню
+const defaultMenuItems = [
+  { label: 'Главная', link: { type: 'Web', url: '/' } },
+  { label: 'Пейзажи', link: { type: 'Web', url: '/landscapes' } },
+  { label: 'Об авторе', link: { type: 'Web', url: '/about' } }
+];
+
+const menuItems = navigation?.data?.menu_items || defaultMenuItems;
+
+// Универсальная функция получения URL из ссылки Prismic
+function getLinkUrl(link) {
+  if (!link) return '#';
+  
+  // Если ссылка внешняя (Web)
+  if (link.link_type === 'Web' && link.url) {
+    return link.url;
+  }
+  
+  // Если ссылка на документ
+  if (link.link_type === 'Document' && link.uid) {
+    // Определяем тип документа и строим путь
+    const type = link.type;
+    if (type === 'homepage') return '/';
+    if (type === 'landscapes') return '/landscapes';
+    if (type === 'about') return '/about';
+    // Если тип не известен, используем uid
+    return `/${link.uid}`;
+  }
+  
+  return '#';
+}
 ---
 
 <header class="header">
   <div class="container header-container">
     <div class="logo">
       <a href="/" class="logo-link">
-        <!-- Встроенный SVG логотип -->
+        <!-- Встроенный SVG логотип (полностью сохранён) -->
         <svg class="logo-image" width="140" height="32" viewBox="0 0 180 40" fill="none" xmlns="http://www.w3.org/2000/svg">
   <!-- Смартфон / Мобильный телефон (символ мобильной фотографии) -->
   <g>
@@ -42,25 +80,22 @@ import MobileMenu from './MobileMenu.astro';
       </a>
     </div>
     
-    <!-- Десктопное меню -->
-    <nav class="desktop-nav">
+    <!-- Десктопное меню – теперь динамическое -->
+   <nav class="desktop-nav">
       <ul class="nav-list">
-        <li class="nav-item">
-          <a href="/" class="nav-link">Главная</a>
-        </li>
-        <li class="nav-item">
-          <a href="/landscapes" class="nav-link">Пейзажи</a>
-        </li>
-        <li class="nav-item">
-          <a href="/about" class="nav-link">Об авторе</a>
-        </li>
+        {menuItems.map((item, index) => (
+          <li class="nav-item" key={index}>
+            <a href={getLinkUrl(item.link)} class="nav-link">
+              {item.label}
+            </a>
+          </li>
+        ))}
       </ul>
     </nav>
     
-    <!-- Управление: тема и мобильное меню -->
     <div class="header-controls">
       <ThemeToggle />
-      <MobileMenu />
+      <MobileMenu navigation={navigation} />
     </div>
   </div>
 </header>

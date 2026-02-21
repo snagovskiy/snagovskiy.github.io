@@ -1,41 +1,49 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import Gallery from '../components/Gallery.astro';
+import { client } from '../lib/prismic';
+import { asText, asHTML } from '@prismicio/helpers';
 
-// Пример данных для галереи на главной
-const featuredImages = [
-  {
-    src: "/images/landscape/IMG_20251016_170412.jpg",
-    alt: "Родина-мать Волгоград",
-    title: "Родина-мать",
-    description: "Скульптура «Родина-мать зовёт!»"
-  },
-  {
-    src: "/images/landscape/IMG_20251016_123325.jpg",
-    alt: "Парк Победы. Волгоград",
-    title: "Парк Победы",
-    description: "Женщины труженици тыла"
-  },
-  {
-    src: "/images/landscape/IMG_20251016_170515.jpg",
-    alt: "Храм Всех Святых. Волгоград",
-    title: "Храм Всех Святых",
-    description: "Храм Всех Святых на закате"
-  }
-];
+// 1. Получаем данные главной страницы (как и раньше)
+const homepage = await client.getSingle('homepage', {
+  fetchLinks: [
+    'gallery_image.image',
+    'gallery_image.title',
+    'gallery_image.description'
+  ]
+});
+
+// 2. Получаем данные навигации (меню) из Prismic
+const navigation = await client.getSingle('navigation');
+
+// 3. Извлекаем заголовок и описание главной страницы
+const homeTitle = asText(homepage.data.home_title) || 'Уличная фотография, которая рассказывает истории';
+const homeDescriptionHTML = asHTML(homepage.data.home_description) || '<p>Запечатлеваю моменты городской жизни...</p>';
+
+// 4. Избранные работы
+const featuredImages = homepage.data.selected_works?.map(item => {
+  const linkedImage = item.image;
+  if (!linkedImage?.data) return null;
+  return {
+    src: linkedImage.data.image.url,
+    alt: linkedImage.data.image.alt || asText(linkedImage.data.title) || '',
+    title: asText(linkedImage.data.title) || '',
+    description: asText(linkedImage.data.description) || ''
+  };
+}).filter(Boolean) || [];
 ---
 
+<!-- Передаём navigation в MainLayout -->
 <MainLayout 
+  navigation={navigation}
   title="StreetFrame - Галерея уличной фотографии"
   description="Профессиональная уличная фотография. Пейзажи городской среды, архитектура и моменты жизни города."
 >
   <section class="hero fade-in">
     <div class="hero-content">
-      <h1 class="hero-title">Уличная фотография, которая рассказывает истории</h1>
-      <p class="hero-description">
-        Запечатлеваю моменты городской жизни, архитектурные формы и неповторимую атмосферу улиц. 
-        Каждый кадр — это история, ожидающая своего зрителя.
-      </p>
+      <h1 class="hero-title">{homeTitle}</h1>
+      <!-- Описание выводим как HTML (с параграфами и прочим) -->
+      <div class="hero-description" set:html={homeDescriptionHTML} />
       <div class="hero-actions">
         <a href="/landscapes" class="btn btn-primary">Смотреть пейзажи</a>
         <a href="/about" class="btn btn-secondary">Об авторе</a>
@@ -45,7 +53,11 @@ const featuredImages = [
 
   <section class="featured-section">
     <h2 class="section-title">Избранные работы</h2>
-    <Gallery images={featuredImages} />
+    {featuredImages.length > 0 ? (
+      <Gallery images={featuredImages} />
+    ) : (
+      <p class="no-images">Нет избранных работ</p>
+    )}
     
     <div class="cta-section">
       <h2 class="cta-title">Хотите увидеть больше?</h2>
@@ -58,6 +70,7 @@ const featuredImages = [
 </MainLayout>
 
 <style>
+  /* Стили полностью сохранены, без изменений */
   .hero {
     padding: 3rem 0;
     text-align: center;
@@ -163,6 +176,12 @@ const featuredImages = [
     max-width: 600px;
     margin-left: auto;
     margin-right: auto;
+  }
+  
+  .no-images {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 2rem;
   }
   
   @media (max-width: 768px) {
